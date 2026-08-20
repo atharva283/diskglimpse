@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project-specific output files
+*.csv
+*.json
+!pyproject.toml
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# PyInstaller build artifacts
+dist/
+build/
+
+# Archives
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.gz
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+
+# Backup / staging folders (local only)
+disk-analyzer-cli/
+updated_files/
