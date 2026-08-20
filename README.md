@@ -32,11 +32,11 @@ It analyzes ANY drive (`C:\`, `D:\`, etc.) or specific folder, identifies the la
 Download and run the standalone Windows executable — no Python needed!
 
 1. Go to the [Releases](https://github.com/atharva283/diskglimpse/releases/latest) page.
-2. Download `disk-analyzer-cli.exe`.
+2. Download `diskglimpse.exe`.
 3. Open PowerShell in the same folder and run:
 
 ```powershell
-.\disk-analyzer-cli.exe C:\ --interactive
+.\diskglimpse.exe C:\ --interactive
 ```
 
 ---
@@ -168,7 +168,7 @@ To build `disk-analyzer-cli.exe` yourself using PyInstaller:
 
 ```bash
 pip install -e ".[dev]"
-pyinstaller disk-analyzer-cli.spec
+pyinstaller diskglimpse.spec
 ```
 
 The `.exe` will appear in the `dist/` folder. See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for full details.

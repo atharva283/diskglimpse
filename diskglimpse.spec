@@ -41,7 +41,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='disk-analyzer-cli',
+    name='diskglimpse',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
