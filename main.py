@@ -261,6 +261,30 @@ def run_cli_mode(target_path: str, args) -> int:
         return 4
 
 
+def _is_no_args_run() -> bool:
+    """
+    Detect if the program was launched with no meaningful arguments —
+    i.e. double-clicked from Explorer or run as bare `diskglimpse`.
+
+    Returns True when only the default path (or nothing) was provided
+    and no CLI flags were explicitly set.
+    """
+    import sys
+    # sys.argv[0] is the script/exe name; anything beyond is a user argument
+    user_args = sys.argv[1:]
+
+    # If completely empty → definitely double-clicked
+    if not user_args:
+        return True
+
+    # If the only argument looks like a drive/path (not a flag), still treat
+    # it as a "no flags" run so the TUI opens on that path
+    if len(user_args) == 1 and not user_args[0].startswith('-'):
+        return True
+
+    return False
+
+
 def main() -> int:
     """Main entry point."""
     args = parse_arguments()
@@ -273,7 +297,11 @@ def main() -> int:
         print(f"Error: Not a directory: {target_path}", file=sys.stderr)
         return 1
 
-    if args.interactive:
+    # Auto-launch interactive TUI when:
+    #   • double-clicked from Explorer
+    #   • run as bare `diskglimpse` or `diskglimpse D:\`
+    #   • --interactive flag explicitly passed
+    if args.interactive or _is_no_args_run():
         return run_interactive_mode(target_path, args)
     else:
         return run_cli_mode(target_path, args)
