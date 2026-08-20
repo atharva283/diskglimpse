@@ -309,3 +309,69 @@ def get_directory_summary(root_path: str) -> Dict[str, Any]:
             summary['total_dirs'] += 1
     
     return summary
+
+
+class Node:
+    def __init__(self, name: str, path: str, size: int, is_dir: bool):
+        self.name = name
+        self.path = path
+        self.size = size
+        self.is_dir = is_dir
+        self.children = []
+        self._total_size = None
+
+    def get_total_size(self) -> int:
+        if self._total_size is not None:
+            return self._total_size
+        
+        total = self.size
+        for child in self.children:
+            total += child.get_total_size()
+            
+        self._total_size = total
+        return total
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'path': self.path,
+            'size': self.size,
+            'total_size': self.get_total_size(),
+            'is_dir': self.is_dir,
+            'children': [child.to_dict() for child in self.children] if self.is_dir else []
+        }
+
+def build_tree_from_results(results: List[Dict[str, Any]], root_path: str) -> 'Node':
+    root_node = Node(name=os.path.basename(root_path) or root_path, path=root_path, size=0, is_dir=True)
+    nodes = {root_path: root_node}
+
+    for item in sorted(results, key=lambda x: x['depth']):
+        path = item['path']
+        if path == root_path:
+            continue
+        
+        node = Node(name=item['name'], path=path, size=item['size'], is_dir=item['is_dir'])
+        nodes[path] = node
+        
+        parent_path = os.path.dirname(path)
+        if parent_path in nodes:
+            nodes[parent_path].children.append(node)
+            
+    # Populate total_size back to the flat results list for sorting and displaying
+    for item in results:
+        path = item['path']
+        if path in nodes:
+            item['total_size'] = nodes[path].get_total_size()
+            
+    return root_node
+
+def find_node_by_path(root: 'Node', path: str) -> Optional['Node']:
+    if root.path == path:
+        return root
+        
+    for child in root.children:
+        found = find_node_by_path(child, path)
+        if found:
+            return found
+            
+    return None

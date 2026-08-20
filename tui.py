@@ -12,8 +12,8 @@ Provides:
 import os
 from typing import List, Dict, Any, Optional
 from rich.console import Console
-from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn, 
-                         TimeRemainingColumn, TransferSpeedColumn, MofNCompleteColumn
+from rich.progress import (Progress, TextColumn, BarColumn, TaskProgressColumn, 
+                         TimeRemainingColumn, TransferSpeedColumn, MofNCompleteColumn)
 from rich.table import Table
 from rich.tree import Tree
 from rich.panel import Panel

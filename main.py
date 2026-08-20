@@ -113,12 +113,13 @@ def run_interactive_mode(target_path: str, args) -> int:
 
     try:
         with ScanProgress() as progress:
-            def progress_callback(path, count):
-                progress.update(path, count)
-            results = scan_directory(root_path=target_path,
+            results = []
+            for item in scan_directory(root_path=target_path,
                                      include_hidden=args.include_hidden,
-                                     max_depth=args.max_depth,
-                                     progress_callback=progress_callback)
+                                     max_depth=args.max_depth):
+                results.append(item)
+                if len(results) % 50 == 0:
+                    progress.update(item['path'], len(results))
             progress.complete(len(results))
 
         min_size = parse_size(args.min_size) if args.min_size else 0
@@ -224,9 +225,9 @@ def run_cli_mode(target_path: str, args) -> int:
     print(f"\nScanning: {target_path}\n")
 
     try:
-        results = scan_directory(root_path=target_path,
+        results = list(scan_directory(root_path=target_path,
                                  include_hidden=args.include_hidden,
-                                 max_depth=args.max_depth)
+                                 max_depth=args.max_depth))
 
         min_size = parse_size(args.min_size) if args.min_size else 0
         max_size = parse_size(args.max_size) if args.max_size else None
@@ -301,11 +302,19 @@ def main() -> int:
     #   • double-clicked from Explorer
     #   • run as bare `diskglimpse` or `diskglimpse D:\`
     #   • --interactive flag explicitly passed
-    if args.interactive or _is_no_args_run():
-        return run_interactive_mode(target_path, args)
-    else:
-        return run_cli_mode(target_path, args)
+    try:
+        if args.interactive or _is_no_args_run():
+            ret = run_interactive_mode(target_path, args)
+        else:
+            ret = run_cli_mode(target_path, args)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        ret = 1
 
+    if _is_no_args_run():
+        input("\nPress Enter to exit...")
+        
+    return ret
 
 if __name__ == '__main__':
     sys.exit(main())
