@@ -1,138 +1,137 @@
-# DiskGlimpse 🚀
+# DiskGlimpse 🔍
 
-A blazing fast, memory-efficient Windows disk space analyzer with an interactive TUI. Built for power users, developers, and system administrators who prefer the terminal.
+> A blazing fast, interactive Windows disk space analyzer for developers and power users  
+> who prefer the terminal over bloated GUI tools.
 
-It analyzes ANY drive (`C:\`, `D:\`, etc.) or specific folder, identifies the largest files and directories, detects junk/cache with smart heuristics, and offers a **safe, user-controlled cleanup** — all without ever touching your system files automatically.
+[![Platform](https://img.shields.io/badge/platform-Windows-0078D4?logo=windows)](https://github.com/atharva283/diskglimpse/releases/latest)
+[![Python](https://img.shields.io/badge/python-3.9%2B-brightgreen?logo=python)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/atharva283/diskglimpse?color=blue)](https://github.com/atharva283/diskglimpse/releases/latest)
+
+---
 
 ## 📸 Screenshots
-
-![Interactive Menu](menu.png)
 
 ![Scan in Progress](scan.png)
 
 ![Report View](report.png)
 
+![Interactive Menu](menu.png)
+
 ---
 
 ## 🌟 Key Features
 
-- **Smart Junk Detection:** Automatically identifies Developer Cache (`node_modules`, `__pycache__`, `venv`, `build`, `dist`, etc.) and System Junk (`Temp`, `.log`, `.tmp`, browser caches). Flags them for review — never deletes anything automatically.
-- **Safe, User-Controlled Cleanup:** After scanning, you get an interactive checkbox menu to **manually select** which flagged items to delete. A final `⚠️ Are you sure?` confirmation (default: No) is always shown before anything is removed.
-- **Zero-Crash Engineering:** Safely skips Windows locked files, protected system folders (`System Volume Information`, `$RECYCLE.BIN`), and infinite junction/symlink loops (ReparsePoints) that typically crash Python scripts.
-- **Memory Efficient:** Uses Breadth-First Search (BFS) with Generators. Scans millions of files without loading them all into RAM.
-- **Blazing Fast:** Leverages `os.scandir()` with cached `DirEntry` attributes to minimize expensive OS-level kernel calls.
-- **Interactive TUI:** Real-time progress bar, drill-down directory navigation, and a beautiful summary table — all in your terminal.
-- **Flexible CLI:** Use flags for scripting and automation — filter by size, extension, depth, and more.
-- **Export Reports:** Export your scan results to `JSON` or `CSV`.
+| Feature | Description |
+|---|---|
+| 🖥️ **Interactive TUI** | Real-time progress, drill-down navigation, rich summary table |
+| 🔍 **Smart Junk Detection** | Flags Developer Cache & System Junk automatically |
+| 🗑️ **Safe Cleanup** | User-controlled checkbox selection + explicit confirmation — nothing auto-deleted |
+| ⚡ **Blazing Fast** | BFS + `os.scandir()` — scans millions of files with minimal RAM |
+| 🛡️ **Zero-Crash** | Handles permission errors, reparse points, and locked system dirs gracefully |
+| 📤 **Export** | Save results to `JSON` or `CSV` for further analysis |
+| 🎛️ **Flexible CLI** | Filter by size, extension, depth, pattern — perfect for automation |
 
 ---
 
-## 📥 Quick Start (No Installation Required)
+## 📥 Quick Start — No Python Required
 
-Download and run the standalone Windows executable — no Python needed!
-
-1. Go to the [Releases](https://github.com/atharva283/diskglimpse/releases/latest) page.
-2. Download `diskglimpse.exe`.
-3. Open PowerShell in the same folder and run:
+**Download the standalone `.exe` and run instantly:**
 
 ```powershell
-.\diskglimpse.exe C:\ --interactive
+# Step 1: Download diskglimpse.exe from the Releases page
+# Step 2: Double-click — the TUI launches automatically
+
+# Or run from PowerShell on any drive/folder:
+.\diskglimpse.exe C:\
+.\diskglimpse.exe D:\Projects
 ```
+
+👉 **[Download diskglimpse.exe →](https://github.com/atharva283/diskglimpse/releases/latest)**
 
 ---
 
-## 👨‍💻 For Developers (Run from Source)
+## 👨‍💻 Run from Source
 
 ### Requirements
 - Python **3.9+**
-- Windows (designed and tested for Windows; BFS skip-list targets Windows system paths)
+- Windows 10 / 11
 
-### Install
+### Install & Run
 
 ```bash
 git clone https://github.com/atharva283/diskglimpse.git
 cd diskglimpse
 pip install .
+diskglimpse
 ```
 
-Or install in editable/developer mode with dev tools (PyInstaller, pytest, black, ruff):
+### Developer Install (with build tools)
 
 ```bash
-pip install -e ".[dev]"
-```
-
-### Run
-
-```bash
-python main.py C:\ --interactive
+pip install -e ".[dev]"   # Includes PyInstaller, pytest, black, ruff
 ```
 
 ---
 
 ## 🎮 Usage
 
-### Interactive Mode (Recommended)
+### Interactive Mode — Recommended
 
-Launch the full TUI with drill-down navigation and junk cleanup:
-
-```bash
-python main.py C:\ --interactive
-```
+Double-clicking the `.exe` or running without flags launches the full TUI automatically:
 
 ```bash
-# Scan a specific folder interactively
-python main.py D:\Projects --interactive
+# Launch TUI on C:\ (default)
+diskglimpse
 
-# Scan only 3 levels deep (much faster on large drives)
-python main.py C:\ --interactive --max-depth 3
-
-# Include hidden files and folders
-python main.py C:\ --interactive --include-hidden
-
-# Enable junk detection panel
-python main.py C:\ --interactive --detect-junk
+# Launch TUI on a specific drive or folder
+diskglimpse D:\
+diskglimpse C:\Users\YourName\Downloads
 ```
 
 ### CLI / Automation Mode
 
-Run without `--interactive` for plain output — great for scripts:
+Use flags to bypass the TUI — great for scripts and scheduled tasks:
 
 ```bash
-# Scan D:\ and show top 10 largest items
-python main.py D:\ --top 10
+# Scan only 3 levels deep (much faster on large drives)
+diskglimpse C:\ --max-depth 3 --interactive
 
-# Filter: only show files larger than 500MB
-python main.py C:\ --min-size 500MB
+# Show only files larger than 500MB
+diskglimpse C:\ --min-size 500MB
 
-# Filter: only .mp4 files larger than 1GB
-python main.py D:\Videos --ext .mp4 --min-size 1GB
+# Filter by file extension (can be combined)
+diskglimpse D:\Videos --ext .mp4 --ext .mkv --min-size 1GB
 
 # Filter by filename pattern
-python main.py C:\Users --pattern "*.log"
+diskglimpse C:\Users --pattern "*.log"
 
-# Export scan results to JSON and CSV
-python main.py C:\ --export-json report.json --export-csv report.csv
+# Include hidden files and folders
+diskglimpse C:\ --interactive --include-hidden
 
-# Combine: deep scan, verbose, export
-python main.py C:\ --max-depth 5 --detect-junk --export-json scan.json --verbose
+# Export scan results
+diskglimpse C:\ --export-json report.json --export-csv report.csv
+
+# Full scan with all options
+diskglimpse C:\ --max-depth 5 --min-size 10MB --detect-junk --export-json scan.json --verbose
 ```
 
-### All Available Flags
+### All Flags Reference
 
 | Flag | Default | Description |
 |---|---|---|
-| `path` | `C:\` | Target drive or directory to scan |
-| `--interactive`, `-i` | off | Launch full interactive TUI mode |
-| `--max-depth N` | unlimited | Maximum directory depth to traverse |
-| `--min-size SIZE` | none | Minimum file size filter (e.g. `1KB`, `50MB`, `2GB`) |
-| `--max-size SIZE` | none | Maximum file size filter |
-| `--ext .EXT` | none | Filter by extension (repeatable: `--ext .mp4 --ext .mkv`) |
-| `--pattern PATTERN` | none | Filter by filename glob pattern (e.g. `*.log`) |
-| `--include-hidden` | off | Include hidden files and folders |
-| `--detect-junk` | off | Enable smart junk detection panel |
-| `--top N` | `20` | Number of top items to show in summary table |
-| `--export-json PATH` | none | Export results to a JSON file |
-| `--export-csv PATH` | none | Export results to a CSV file |
+| `path` | `C:\` | Target drive or directory |
+| `--interactive`, `-i` | auto | Launch full interactive TUI |
+| `--max-depth N` | unlimited | Max directory depth to traverse |
+| `--min-size SIZE` | — | Min file size (`1KB`, `50MB`, `2GB`) |
+| `--max-size SIZE` | — | Max file size |
+| `--ext .EXT` | — | Filter by extension (repeatable) |
+| `--pattern PATTERN` | — | Filename glob filter (e.g. `*.log`) |
+| `--include-hidden` | off | Include hidden files/folders |
+| `--detect-junk` | off | Show junk detection summary panel |
+| `--top N` | `20` | Items to show in summary table |
+| `--export-json PATH` | — | Export results to JSON |
+| `--export-csv PATH` | — | Export results to CSV |
 | `-v`, `--verbose` | off | Print full tracebacks on errors |
 | `--version` | — | Show version and exit |
 
@@ -140,38 +139,38 @@ python main.py C:\ --max-depth 5 --detect-junk --export-json scan.json --verbose
 
 ## 🗑️ How the Cleanup Feature Works
 
-DiskGlimpse includes an **opt-in, user-controlled** cleanup flow — nothing is ever deleted automatically.
+> Nothing is ever deleted automatically. Every deletion requires your explicit action.
 
-**The 4-layer safety process:**
+DiskGlimpse uses a **4-layer safety process:**
 
 ```
-1. junk_detector.py   →  Scans results and ONLY flags potential junk (never deletes)
-2. Checkbox Menu      →  YOU manually select which flagged items to include
-3. Confirmation Prompt →  "⚠️ Are you sure?" shown with item list (default answer: No)
-4. Deletion           →  Only executes if you explicitly confirm Yes
+1. junk_detector.py    →  Scans results and ONLY flags potential junk (read-only)
+2. Checkbox Menu       →  YOU manually select which flagged items to include
+3. Confirmation Prompt →  "⚠️ Are you sure?" shown with full item list
+                          (default answer is always NO)
+4. Deletion            →  Only executes after your explicit YES
 ```
 
-**What gets flagged as junk:**
+**What gets flagged:**
 
 | Category | Examples |
 |---|---|
-| Developer Cache | `node_modules`, `__pycache__`, `venv`, `.venv`, `env`, `build`, `dist`, `.pytest_cache`, `.gradle`, `target` |
-| System Junk | `Temp`, `tmp`, `Cache`, browser caches (Chrome/Edge/Firefox), `.log`, `.tmp`, `.bak` files |
+| 🟠 **Developer Cache** | `node_modules`, `__pycache__`, `venv`, `.venv`, `env`, `build`, `dist`, `.pytest_cache`, `.mypy_cache`, `.gradle`, `target` |
+| 🔴 **System Junk** | `Temp`, `tmp`, `Cache`, browser caches (Chrome/Edge/Firefox), `.log`, `.tmp`, `.bak`, `.swp` |
 
-> **Note:** System-critical directories (`System Volume Information`, `$RECYCLE.BIN`, `ProgramData`, `AppData`, `Windows.old`) are **never scanned** — they are silently skipped at the BFS engine level.
+> **Note:** System-critical paths — `System Volume Information`, `$RECYCLE.BIN`, `ProgramData`, `AppData`, `Windows.old` — are **never scanned**. They are silently skipped at the BFS engine level before any analysis begins.
 
 ---
 
-## 🛠️ Build Standalone EXE
-
-To build `disk-analyzer-cli.exe` yourself using PyInstaller:
+## 🛠️ Build the EXE Yourself
 
 ```bash
 pip install -e ".[dev]"
 pyinstaller diskglimpse.spec
+# Output → dist/diskglimpse.exe
 ```
 
-The `.exe` will appear in the `dist/` folder. See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for full details.
+See [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) for full CI/CD and packaging details.
 
 ---
 
@@ -180,14 +179,15 @@ The `.exe` will appear in the `dist/` folder. See [BUILD_INSTRUCTIONS.md](BUILD_
 | Layer | Technology |
 |---|---|
 | Language | Python 3.9+ |
-| TUI / Tables | [`rich`](https://github.com/Textualize/rich) ≥ 13.0 |
+| TUI & Tables | [`rich`](https://github.com/Textualize/rich) ≥ 13.0 |
 | Interactive Menus | [`questionary`](https://github.com/tmbo/questionary) ≥ 2.0 |
-| Packaging | `pyproject.toml` (PEP 517/518, setuptools) |
-| CI/CD | GitHub Actions — auto-builds Windows `.exe` on every release tag |
-| Scan Engine | Iterative BFS with `os.scandir()` + `DirEntry` cached attributes |
+| Packaging | `pyproject.toml` — PEP 517/518 compliant |
+| Build | PyInstaller via `diskglimpse.spec` |
+| CI/CD | GitHub Actions — auto-builds `diskglimpse.exe` on every release tag |
+| Scan Engine | Iterative BFS with `os.scandir()` + cached `DirEntry` attributes |
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
