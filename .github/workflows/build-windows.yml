@@ -60,6 +60,7 @@ jobs:
           --console `
           --clean `
           --noconfirm `
+          --icon=app.ico `
           --hidden-import rich `
           --hidden-import questionary `
           --hidden-import chardet `
