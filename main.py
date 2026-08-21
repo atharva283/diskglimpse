@@ -286,16 +286,70 @@ def _is_no_args_run() -> bool:
     return False
 
 
+def prompt_for_drive() -> str:
+    """Prompt the user to select a drive or enter a custom path."""
+    import string
+    import questionary
+    from rich.console import Console
+    console = Console()
+    
+    console.print("\n[bold cyan]Welcome to DiskGlimpse![/bold cyan]")
+    console.print("Let's analyze your disk space.\n")
+    
+    available_drives = []
+    # Check A-Z for available drives
+    for letter in string.ascii_uppercase:
+        drive = f"{letter}:\\"
+        if os.path.exists(drive):
+            available_drives.append(drive)
+            
+    choices = available_drives + ["Custom Folder...", "Exit"]
+    
+    choice = questionary.select(
+        "Which location would you like to scan?",
+        choices=choices,
+        style=questionary.Style([
+            ('qmark', 'fg:#00ffff bold'),
+            ('question', 'bold'),
+            ('selected', 'fg:#00ff00 bold'),
+            ('pointer', 'fg:#00ff00 bold'),
+        ])
+    ).ask()
+    
+    if choice == "Exit" or not choice:
+        sys.exit(0)
+        
+    if choice == "Custom Folder...":
+        custom_path = questionary.text("Enter full path to folder:").ask()
+        if not custom_path:
+            sys.exit(0)
+        return custom_path
+        
+    return choice
+
+
 def main() -> int:
     """Main entry point."""
     args = parse_arguments()
-    target_path = os.path.abspath(args.path)
+    
+    is_empty_run = not sys.argv[1:]
+    
+    if is_empty_run:
+        target_path = prompt_for_drive()
+        target_path = os.path.abspath(target_path)
+    else:
+        target_path = os.path.abspath(args.path)
 
     if not os.path.exists(target_path):
         print(f"Error: Path does not exist: {target_path}", file=sys.stderr)
+        if _is_no_args_run():
+            input("\nPress Enter to exit...")
         return 1
+        
     if not os.path.isdir(target_path):
         print(f"Error: Not a directory: {target_path}", file=sys.stderr)
+        if _is_no_args_run():
+            input("\nPress Enter to exit...")
         return 1
 
     # Auto-launch interactive TUI when:
