@@ -206,11 +206,12 @@ def run_interactive_mode(target_path: str, args) -> int:
             from tui import prompt_for_export
             prompt_for_export(results)
         elif args.export_json or args.export_csv:
-            from exporter import export_to_both
-            export_to_both(results, json_path=args.export_json, csv_path=args.export_csv)
+            from exporter import export_to_json, export_to_csv
             if args.export_json:
+                export_to_json(results, args.export_json)
                 console.print(f"[green]Exported JSON:[/] {args.export_json}")
             if args.export_csv:
+                export_to_csv(results, args.export_csv)
                 console.print(f"[green]Exported CSV:[/] {args.export_csv}")
 
         return 0
@@ -252,10 +253,12 @@ def run_cli_mode(target_path: str, args) -> int:
         print(f"\nComplete! Files: {total_files}, Dirs: {total_dirs}, Size: {total_size:,} bytes")
 
         if args.export_json or args.export_csv:
-            export_to_both(results, args.export_json, args.export_csv)
+            from exporter import export_to_json, export_to_csv
             if args.export_json:
+                export_to_json(results, args.export_json)
                 print(f"  JSON: {args.export_json}")
             if args.export_csv:
+                export_to_csv(results, args.export_csv)
                 print(f"  CSV: {args.export_csv}")
 
         return 0

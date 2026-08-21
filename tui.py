@@ -388,7 +388,7 @@ def prompt_for_export(results: List[Dict[str, Any]]) -> None:
             default=f"diskglimpse_report_{timestamp}.csv"
         ).ask()
         if csv_path:
-            exporter.export_to_both(results, None, csv_path)
+            exporter.export_to_csv(results, csv_path)
             console.print(f"[green]✓ CSV exported to {csv_path}[/]")
             
     if choice in ["Export to JSON", "Export to Both"]:
@@ -397,5 +397,5 @@ def prompt_for_export(results: List[Dict[str, Any]]) -> None:
             default=f"diskglimpse_report_{timestamp}.json"
         ).ask()
         if json_path:
-            exporter.export_to_both(results, json_path, None)
+            exporter.export_to_json(results, json_path)
             console.print(f"[green]✓ JSON exported to {json_path}[/]")
