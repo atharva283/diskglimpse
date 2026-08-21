@@ -327,6 +327,14 @@ def display_junk_cleanup_menu(junk_items: Dict[str, str]) -> List[str]:
         border_style="yellow"
     ))
     
+    wants_cleanup = questionary.confirm(
+        "Would you like to review and clean up these junk items?",
+        default=False
+    ).ask()
+    
+    if not wants_cleanup:
+        return []
+    
     # Create choices with junk type indicators
     choices = []
     for path, junk_type in sorted(junk_items.items()):
@@ -342,11 +350,11 @@ def display_junk_cleanup_menu(junk_items: Dict[str, str]) -> List[str]:
     
     # Allow multi-select
     selected = questionary.checkbox(
-        "Select items to delete (Space to toggle, Enter to confirm)",
+        "Select items to delete (Press Enter without selecting any to SKIP)",
         choices=choices,
         qmark="🧹",
         pointer="➤ ",
-        instruction="(Press Space to select/deselect)"
+        instruction="(Space to select/deselect, Enter to confirm or skip)"
     ).ask()
     
     return selected if selected else []
