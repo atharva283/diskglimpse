@@ -144,20 +144,19 @@ def run_interactive_mode(target_path: str, args) -> int:
         root_tree = build_tree_from_results(results, target_path)
         display_summary_table(results, top_n=args.top, junk_flags=junk_flags)
 
-        while True:
-            dir_options = [item['path'] for item in results
-                          if item.get('is_dir') and item.get('total_size', item.get('size', 0)) > 0][:20]
-            if not dir_options:
-                console.print("[yellow]No directories available.[/]")
-                break
-
+        dir_options = [item['path'] for item in results
+                      if item.get('is_dir') and item.get('total_size', item.get('size', 0)) > 0][:20]
+        if not dir_options:
+            console.print("[yellow]No directories available.[/]")
+            selected_path = None
+        else:
             selected_path = select_directory_to_explore(dir_options)
-            if not selected_path:
-                break
 
+        while selected_path:
             node = find_node_by_path(root_tree, selected_path)
             if not node:
                 console.print(f"[red]Could not find: {selected_path}[/]")
+                selected_path = select_directory_to_explore(dir_options)
                 continue
 
             node_data = {'name': node.name, 'path': node.path, 'size': node.size,
@@ -171,13 +170,20 @@ def run_interactive_mode(target_path: str, args) -> int:
             if action == 'exit':
                 break
             elif action == 'go_back':
-                continue
+                parent_path = os.path.dirname(selected_path)
+                # If we go back up past the initial drive root, show global options again
+                if parent_path and parent_path != selected_path and len(parent_path) >= len(target_path):
+                    selected_path = parent_path
+                else:
+                    selected_path = select_directory_to_explore(dir_options)
             elif action == 'view_subfolder':
                 subfolders = [child.path for child in node.children if child.is_dir]
                 if subfolders:
                     selected_sub = select_directory_to_explore(subfolders)
                     if selected_sub:
-                        continue
+                        selected_path = selected_sub
+                else:
+                    console.print("[yellow]No subfolders available to explore here.[/]")
 
         if junk_flags:
             selected_to_delete = display_junk_cleanup_menu(junk_flags)
