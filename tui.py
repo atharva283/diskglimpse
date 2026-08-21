@@ -350,3 +350,44 @@ def display_junk_cleanup_menu(junk_items: Dict[str, str]) -> List[str]:
     ).ask()
     
     return selected if selected else []
+
+
+def prompt_for_export(results: List[Dict[str, Any]]) -> None:
+    """Prompt the user if they want to export the scan results."""
+    choice = questionary.select(
+        "Would you like to export the scan results?",
+        choices=[
+            "No, exit",
+            "Export to CSV",
+            "Export to JSON",
+            "Export to Both"
+        ],
+        qmark="💾",
+        pointer="➤ "
+    ).ask()
+    
+    if choice == "No, exit" or not choice:
+        return
+        
+    import exporter
+    import time
+    
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    
+    if choice in ["Export to CSV", "Export to Both"]:
+        csv_path = questionary.text(
+            "Enter CSV filename:", 
+            default=f"diskglimpse_report_{timestamp}.csv"
+        ).ask()
+        if csv_path:
+            exporter.export_to_both(results, None, csv_path)
+            console.print(f"[green]✓ CSV exported to {csv_path}[/]")
+            
+    if choice in ["Export to JSON", "Export to Both"]:
+        json_path = questionary.text(
+            "Enter JSON filename:", 
+            default=f"diskglimpse_report_{timestamp}.json"
+        ).ask()
+        if json_path:
+            exporter.export_to_both(results, json_path, None)
+            console.print(f"[green]✓ JSON exported to {json_path}[/]")

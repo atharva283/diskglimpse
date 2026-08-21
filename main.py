@@ -196,7 +196,10 @@ def run_interactive_mode(target_path: str, args) -> int:
                         console.print(f"[red]Failed: {path}: {e}[/]")
                 console.print(f"\n[bold green]Cleanup complete! Deleted {deleted_count} items.[/]")
 
-        if args.export_json or args.export_csv:
+        if _is_no_args_run():
+            from tui import prompt_for_export
+            prompt_for_export(results)
+        elif args.export_json or args.export_csv:
             from exporter import export_to_both
             export_to_both(results, json_path=args.export_json, csv_path=args.export_csv)
             if args.export_json:
@@ -328,6 +331,47 @@ def prompt_for_drive() -> str:
     return choice
 
 
+def prompt_for_filters(args) -> None:
+    """Prompt the user for advanced filters and update args in-place."""
+    import questionary
+    
+    configure = questionary.confirm(
+        "Would you like to configure advanced scan filters (e.g. min size, depth)?",
+        default=False
+    ).ask()
+    
+    if not configure:
+        return
+        
+    # Include hidden files
+    args.include_hidden = questionary.confirm("Include hidden files?", default=False).ask()
+    
+    # Max Depth
+    depth_str = questionary.text("Maximum directory depth (leave empty for unlimited):").ask()
+    if depth_str and depth_str.isdigit():
+        args.max_depth = int(depth_str)
+        
+    # Min Size
+    min_sz = questionary.text("Minimum file size (e.g. 1MB, 500KB) [leave empty for none]:").ask()
+    if min_sz:
+        args.min_size = min_sz
+        
+    # Max Size
+    max_sz = questionary.text("Maximum file size (e.g. 1GB) [leave empty for none]:").ask()
+    if max_sz:
+        args.max_size = max_sz
+        
+    # Extensions
+    exts = questionary.text("Filter by extensions (comma separated, e.g. .log,.mp4) [leave empty for all]:").ask()
+    if exts:
+        args.ext = [e.strip() for e in exts.split(',') if e.strip()]
+        
+    # Pattern
+    pattern = questionary.text("Filter by filename pattern (e.g. *backup*) [leave empty for all]:").ask()
+    if pattern:
+        args.pattern = pattern
+
+
 def main() -> int:
     """Main entry point."""
     args = parse_arguments()
@@ -337,6 +381,7 @@ def main() -> int:
     if is_empty_run:
         target_path = prompt_for_drive()
         target_path = os.path.abspath(target_path)
+        prompt_for_filters(args)
     else:
         target_path = os.path.abspath(args.path)
 
